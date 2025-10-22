@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SolarDoc - Solar Panel Health Analysis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --sun-yellow: #FFD93D;
+            --sky-blue: #6BC5F8;
+            --leaf-green: #4CD97B;
+            --fresh-orange: #FF9A3D;
+            --clean-white: #FFFFFF;
+            --light-gray: #F5F7FA;
+            --text-dark: #2D3748;
+            --accent-purple: #9F7AEA;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #E3F2FD, #B3E5FC);
+            color: var(--text-dark);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .diagnosis-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 60px 40px;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, var(--sky-blue), var(--leaf-green));
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(107, 197, 248, 0.3);
+            position: relative;
+            overflow: hidden;
+            color: white;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+        
+        .logo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin-bottom: 25px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .logo:hover {
+            transform: scale(1.08);
+        }
+        
+        .logo-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--sun-yellow), var(--fresh-orange));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(255, 217, 61, 0.8);
+            border: 5px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .logo-placeholder i {
+            font-size: 6rem;
+            color: white;
+            z-index: 2;
+            filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.2));
+        }
+        
+        .logo-pulse {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            animation: pulse 2s infinite;
+            z-index: 1;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0.7;
+            }
+            70% {
+                transform: scale(1.3);
+                opacity: 0;
+            }
+            100% {
+                transform: scale(1.3);
+                opacity: 0;
+            }
+        }
+        
+        h1 {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+            letter-spacing: 1px;
+        }
+        
+        .tagline {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+            color: white;
+            font-style: italic;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .demo-image {
+            width: 100%;
+            max-width: 700px;
+            margin: 30px auto;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+            border: 5px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .demo-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .subtitle {
+            font-size: 1.4rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+            font-weight: 300;
+            line-height: 1.8;
+        }
+        
+        .btn {
+            background: linear-gradient(to right, var(--sky-blue), var(--leaf-green));
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 40px;
+            font-size: 1.3rem;
+            box-shadow: 0 8px 25px rgba(107, 197, 248, 0.5);
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(107, 197, 248, 0.6);
+            background: linear-gradient(to right, var(--fresh-orange), var(--sun-yellow));
+        }
+        
+        .btn:active {
+            transform: translateY(2px);
+        }
+        
+        .solar-pattern {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 250px;
+            height: 250px;
+            opacity: 0.1;
+            background: radial-gradient(circle, var(--sun-yellow) 10%, transparent 10%),
+                        radial-gradient(circle, var(--sun-yellow) 10%, transparent 10%);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px;
+            margin-top: 50px;
+            font-size: 1.1rem;
+            opacity: 0.8;
+            border-top: 1px solid rgba(107, 197, 248, 0.3);
+            color: var(--text-dark);
+            width: 100%;
+        }
+        
+        .creator {
+            margin-top: 15px;
+            font-size: 1rem;
+            opacity: 0.7;
+        }
+        
+        .click-hint {
+            margin-top: 15px;
+            font-size: 1.1rem;
+            opacity: 0.9;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        
+        /* Diagnosis Page Styles */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--sky-blue);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            border-radius: 50px;
+            transition: all 0.3s;
+            background: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 4px 15px rgba(107, 197, 248, 0.2);
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        
+        .back-btn:hover {
+            color: var(--fresh-orange);
+            transform: translateX(-5px);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        @media (max-width: 1000px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: var(--clean-white);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(107, 197, 248, 0.15);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(107, 197, 248, 0.2);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(107, 197, 248, 0.25);
+        }
+        
+        .section-title {
+            font-size: 1.7rem;
+            margin-bottom: 25px;
+            color: var(--sky-blue);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+        }
+        
+        .section-title i {
+            color: var(--fresh-orange);
+        }
+        
+        .upload-area {
+            border: 3px dashed var(--sky-blue);
+            border-radius: 15px;
+            padding: 60px 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 25px;
+            background: rgba(107, 197, 248, 0.05);
+        }
+        
+        .upload-area:hover {
+            background: rgba(107, 197, 248, 0.1);
+            border-color: var(--fresh-orange);
+        }
+        
+        .upload-area.dragover {
+            background: rgba(76, 217, 123, 0.1);
+            border-color: var(--leaf-green);
+        }
+        
+        .upload-icon {
+            font-size: 4rem;
+            color: var(--sky-blue);
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .upload-area:hover .upload-icon {
+            color: var(--fresh-orange);
+            transform: scale(1.1);
+        }
+        
+        .upload-text h3 {
+            font-size: 1.7rem;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+        }
+        
+        .upload-text p {
+            opacity: 0.7;
+            font-size: 1.1rem;
+        }
+        
+        #file-input {
+            display: none;
+        }
+        
+        .image-preview {
+            margin: 25px 0;
+            display: none;
+            text-align: center;
+        }
+        
+        #preview {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(107, 197, 248, 0.3);
+        }
+        
+        .progress-container {
+            margin: 25px 0;
+            display: none;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 14px;
+            background-color: rgba(107, 197, 248, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 12px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, var(--sky-blue), var(--leaf-green));
+            width: 0%;
+            transition: width 0.4s;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background-image: linear-gradient(
+                -45deg,
+                rgba(255, 255, 255, 0.3) 25%,
+                transparent 25%,
+                transparent 50%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(255, 255, 255, 0.3) 75%,
+                transparent 75%,
+                transparent
+            );
+            background-size: 35px 35px;
+            animation: move 1.5s linear infinite;
+        }
+        
+        @keyframes move {
+            0% { background-position: 0 0; }
+            100% { background-position: 35px 35px; }
+        }
+        
+        .progress-text {
+            text-align: center;
+            font-size: 1rem;
+            opacity: 0.8;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+        
+        .result-card {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .defect-type {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: var(--text-dark);
+        }
+        
+        .confidence {
+            font-size: 1.7rem;
+            margin-bottom: 25px;
+            color: var(--fresh-orange);
+            font-weight: 600;
+        }
+        
+        .defect-description {
+            margin-bottom: 25px;
+            line-height: 1.7;
+            font-size: 1.1rem;
+            background: rgba(107, 197, 248, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid var(--sky-blue);
+        }
+        
+        .repair-section {
+            background: rgba(255, 154, 61, 0.05);
+            padding: 25px;
+            border-radius: 12px;
+            margin-top: 25px;
+            border-left: 4px solid var(--fresh-orange);
+        }
+        
+        .repair-title {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--fresh-orange);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .repair-steps {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .repair-steps li {
+            margin-bottom: 12px;
+            padding-left: 30px;
+            position: relative;
+            color: var(--text-dark);
+        }
+        
+        .repair-steps li:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--leaf-green);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .probability-bars {
+            margin-top: 30px;
+        }
+        
+        .probability-item {
+            margin-bottom: 18px;
+        }
+        
+        .probability-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+        
+        .probability-bar {
+            height: 12px;
+            background-color: rgba(107, 197, 248, 0.2);
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .probability-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.8s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .probability-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.5) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .defect-info {
+            margin-top: 40px;
+        }
+        
+        .defect-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+        
+        .defect-card {
+            background: var(--clean-white);
+            border-radius: 15px;
+            padding: 25px;
+            transition: all 0.3s;
+            border: 1px solid rgba(107, 197, 248, 0.2);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 5px 15px rgba(107, 197, 248, 0.1);
+        }
+        
+        .defect-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 25px rgba(107, 197, 248, 0.2);
+        }
+        
+        .defect-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--fresh-orange);
+            text-align: center;
+        }
+        
+        .defect-name {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: var(--sky-blue);
+            text-align: center;
+        }
+        
+        .defect-desc {
+            font-size: 1rem;
+            line-height: 1.6;
+            flex-grow: 1;
+            color: var(--text-dark);
+        }
+        
+        .no-result {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            opacity: 0.7;
+            color: var(--text-dark);
+        }
+        
+        .success { color: var(--leaf-green); }
+        .warning { color: var(--fresh-orange); }
+        .error { color: #FF6B6B; }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .tagline {
+                font-size: 1.4rem;
+            }
+            
+            .logo {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .logo-placeholder i {
+                font-size: 4rem;
+            }
+            
+            .btn {
+                padding: 15px 30px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Home Page -->
+    <div id="homePage" class="page active">
+        <div class="container">
+            <header>
+                <div class="solar-pattern"></div>
+                <div class="logo-container">
+                    <div class="logo" onclick="showPage('diagnosisPage')">
+                        <div class="logo-placeholder">
+                            <div class="logo-pulse"></div>
+                            <i class="fas fa-stethoscope"></i>
+                        </div>
+                    </div>
+                    <h1>SolarDoc</h1>
+                    <p class="tagline">"Your panels' health, our priority."</p>
+                    <p class="click-hint">Click the stethoscope to start diagnosis</p>
+                </div>
+                
+                <div class="demo-image">
+                    <img src="https://images.squarespace-cdn.com/content/v1/63456c4cd4008574744c3238/f34983af-f5ed-4d52-b4c5-19752a63c7f5/AdobeStock_793601731-ezgif.com-video-to-gif-converter.gif" alt="Solar Panel Health Analysis Demo">
+                </div>
+                
+                <p class="subtitle">Advanced AI-powered system for identifying and classifying defects in solar panels with professional repair recommendations. Our technology helps maintain optimal performance and extend the lifespan of your solar energy systems.</p>
+                
+                <button class="btn" onclick="showPage('diagnosisPage')">
+                    <i class="fas fa-stethoscope"></i> Start Panel Diagnosis
+                </button>
+            </header>
+            
+            <footer>
+                <p>SolarDoc - Solar Panel Health Analysis &copy; 2023 | Your panels' health, our priority.</p>
+                <p class="creator">AI Model created by Eng. Malak Amin Thabet</p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Diagnosis Page -->
+    <div id="diagnosisPage" class="page">
+        <div class="diagnosis-container">
+            <button class="back-btn" onclick="showPage('homePage')">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </button>
+            
+            <header>
+                <div class="solar-pattern"></div>
+                <div class="logo-container">
+                    <div class="logo">
+                        <div class="logo-placeholder">
+                            <i class="fas fa-stethoscope"></i>
+                        </div>
+                    </div>
+                    <h1>SolarDoc</h1>
+                    <p class="tagline">"Your panels' health, our priority."</p>
+                </div>
+                <p class="subtitle">Advanced AI-powered system for identifying and classifying defects in solar panels with repair recommendations</p>
+            </header>
+            
+            <div class="main-content">
+                <div class="card upload-section">
+                    <h2 class="section-title"><i class="fas fa-upload"></i> Upload Panel Image</h2>
+                    
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="upload-text">
+                            <h3>Click or Drag Image Here</h3>
+                            <p>Supported formats: JPG, JPEG, PNG</p>
+                        </div>
+                        <input type="file" id="file-input" accept="image/*">
+                    </div>
+                    
+                    <div class="image-preview">
+                        <img id="preview" alt="Image Preview">
+                    </div>
+                    
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-bar">
+                            <div class="progress" id="progress"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">Analyzing image...</div>
+                    </div>
+                    
+                    <button class="btn" id="analyzeBtn" style="display: none;">
+                        <i class="fas fa-search"></i> Analyze Image
+                    </button>
+                </div>
+                
+                <div class="card results-section">
+                    <h2 class="section-title"><i class="fas fa-chart-bar"></i> Detection Results</h2>
+                    
+                    <div class="result-card" id="resultCard">
+                        <div class="defect-type" id="defectType">
+                            <i class="fas fa-exclamation-triangle warning"></i>
+                            <span id="defectName">Defect Name</span>
+                        </div>
+                        <div class="confidence" id="confidence">Confidence: 0%</div>
+                        <div class="defect-description" id="defectDescription">
+                            Description of the detected defect will appear here.
+                        </div>
+                        
+                        <div class="repair-section" id="repairSection">
+                            <h3 class="repair-title"><i class="fas fa-tools"></i> Recommended Repair</h3>
+                            <ul class="repair-steps" id="repairSteps">
+                                <li>Repair instructions will appear here based on the detected defect</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="probability-bars" id="probabilityBars"></div>
+                    </div>
+                    
+                    <div class="no-result" id="noResult">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5; color: var(--sky-blue);"></i>
+                        <p>Upload an image to analyze for defects</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card defect-info">
+                <h2 class="section-title"><i class="fas fa-info-circle"></i> Defect Types & Solutions</h2>
+                <div class="defect-grid">
+                    <div class="defect-card">
+                        <div class="defect-icon">
+                            <i class="fas fa-cracked-egg"></i>
+                        </div>
+                        <h3 class="defect-name">Broken</h3>
+                        <p class="defect-desc">Cracked or broken solar cells due to physical damage or manufacturing defects.</p>
+                    </div>
+                    
+                    <div class="defect-card">
+                        <div class="defect-icon">
+                            <i class="fas fa-sun"></i>
+                        </div>
+                        <h3 class="defect-name">Bright Spot</h3>
+                        <p class="defect-desc">Hot spots or bright areas indicating potential overheating or electrical issues.</p>
+                    </div>
+                    
+                    <div class="defect-card">
+                        <div class="defect-icon">
+                            <i class="fas fa-border-style"></i>
+                        </div>
+                        <h3 class="defect-name">Black Border</h3>
+                        <p class="defect-desc">Dark edges or borders suggesting potential degradation or connection problems.</p>
+                    </div>
+                    
+                    <div class="defect-card">
+                        <div class="defect-icon">
+                            <i class="fas fa-cut"></i>
+                        </div>
+                        <h3 class="defect-name">Scratched</h3>
+                        <p class="defect-desc">Surface scratches that can reduce efficiency and lead to further degradation.</p>
+                    </div>
+                    
+                    <div class="defect-card">
+                        <div class="defect-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 class="defect-name">Non-Electricity</h3>
+                        <p class="defect-desc">Non-functional cells that are not producing electricity due to various failures.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <footer>
+                <p>SolarDoc - Solar Panel Health Analysis &copy; 2025 | Your panels' health, our priority.</p>
+                <p class="creator">AI Model created by Eng. Malak Amin Thabet</p>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // Page Navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show the selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Diagnosis Page Functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('file-input');
+        const preview = document.getElementById('preview');
+        const imagePreview = document.querySelector('.image-preview');
+        const progressContainer = document.getElementById('progressContainer');
+        const progress = document.getElementById('progress');
+        const progressText = document.getElementById('progressText');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const resultCard = document.getElementById('resultCard');
+        const noResult = document.getElementById('noResult');
+        const defectName = document.getElementById('defectName');
+        const confidence = document.getElementById('confidence');
+        const defectDescription = document.getElementById('defectDescription');
+        const probabilityBars = document.getElementById('probabilityBars');
+        const repairSection = document.getElementById('repairSection');
+        const repairSteps = document.getElementById('repairSteps');
+        
+        // Defect descriptions and repair steps
+        const defectData = {
+            'broken': {
+                description: 'This panel shows signs of physical damage with cracks or breaks in the solar cells. This can significantly reduce efficiency and may lead to further degradation over time.',
+                repair: [
+                    'Replace the damaged solar cell or module',
+                    'Ensure proper structural support to prevent future damage',
+                    'Apply waterproof sealant around the repaired area',
+                    'Test electrical output after repair'
+                ]
+            },
+            'bright_spot': {
+                description: 'Hot spots or bright areas detected. These are often caused by localized overheating, which can result from shading issues, cell mismatch, or electrical problems.',
+                repair: [
+                    'Identify and remove any shading objects',
+                    'Check for and fix any electrical mismatches',
+                    'Install bypass diodes if not present',
+                    'Monitor temperature distribution after repair'
+                ]
+            },
+            'black_border': {
+                description: 'Dark edges or borders observed around the panel. This may indicate potential degradation, connection issues, or manufacturing defects affecting performance.',
+                repair: [
+                    'Inspect and clean the panel edges',
+                    'Check electrical connections for corrosion',
+                    'Apply anti-reflective coating if needed',
+                    'Test voltage output from different panel sections'
+                ]
+            },
+            'scratched': {
+                description: 'Surface scratches identified on the panel. While minor scratches may not immediately impact performance, deeper ones can reduce light absorption and lead to efficiency loss.',
+                repair: [
+                    'Clean the surface thoroughly',
+                    'Apply specialized solar panel polish for minor scratches',
+                    'Consider panel replacement for deep scratches',
+                    'Install protective coating to prevent future damage'
+                ]
+            },
+            'non_electricity': {
+                description: 'Non-functional cells detected that are not producing electricity. This could be due to various failures including manufacturing defects, aging, or electrical issues.',
+                repair: [
+                    'Check wiring and connections for faults',
+                    'Test individual cell output with a multimeter',
+                    'Replace non-functional cells or the entire module',
+                    'Verify inverter and charge controller functionality'
+                ]
+            }
+        };
+        
+        // Event handlers
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        analyzeBtn.addEventListener('click', () => {
+            uploadFile(fileInput.files[0]);
+        });
+
+        function handleFile(file) {
+            if (!file.type.match('image.*')) {
+                showResult('Please upload an image file only', 'error');
+                return;
+            }
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                preview.src = e.target.result;
+                imagePreview.style.display = 'block';
+                analyzeBtn.style.display = 'inline-flex';
+                resultCard.style.display = 'none';
+                noResult.style.display = 'block';
+                repairSection.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function uploadFile(file) {
+            // Show progress
+            progressContainer.style.display = 'block';
+            progress.style.width = '30%';
+            progressText.textContent = 'Uploading image...';
+
+            // Simulate upload and analysis
+            setTimeout(() => {
+                progress.style.width = '70%';
+                progressText.textContent = 'Analyzing defects...';
+                
+                setTimeout(() => {
+                    progress.style.width = '100%';
+                    progressText.textContent = 'Analysis complete!';
+                    
+                    setTimeout(() => {
+                        progressContainer.style.display = 'none';
+                        
+                        // Show results with sample data
+                        displayResults({
+                            class: 'broken',
+                            confidence: '87',
+                            all_predictions: {
+                                'broken': 87,
+                                'bright_spot': 45,
+                                'black_border': 32,
+                                'scratched': 28,
+                                'non_electricity': 15
+                            }
+                        });
+                    }, 1000);
+                }, 1500);
+            }, 1000);
+        }
+        
+        function displayResults(data) {
+            noResult.style.display = 'none';
+            resultCard.style.display = 'block';
+            repairSection.style.display = 'block';
+            
+            // Update defect information
+            const defectClass = data.class;
+            const defectInfo = defectData[defectClass] || {
+                description: 'Defect description not available.',
+                repair: ['Repair information not available for this defect type.']
+            };
+            
+            defectName.textContent = defectClass.replace('_', ' ').toUpperCase();
+            confidence.textContent = `Confidence: ${data.confidence}%`;
+            defectDescription.textContent = defectInfo.description;
+            
+            // Update repair steps
+            repairSteps.innerHTML = '';
+            defectInfo.repair.forEach(step => {
+                const li = document.createElement('li');
+                li.textContent = step;
+                repairSteps.appendChild(li);
+            });
+            
+            // Update probability bars
+            probabilityBars.innerHTML = '';
+            const sortedPredictions = Object.entries(data.all_predictions)
+                .sort(([,a], [,b]) => b - a);
+            
+            sortedPredictions.forEach(([className, conf]) => {
+                const item = document.createElement('div');
+                item.className = 'probability-item';
+                
+                const header = document.createElement('div');
+                header.className = 'probability-header';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = className.replace('_', ' ');
+                
+                const confSpan = document.createElement('span');
+                confSpan.textContent = `${conf}%`;
+                
+                header.appendChild(nameSpan);
+                header.appendChild(confSpan);
+                
+                const bar = document.createElement('div');
+                bar.className = 'probability-bar';
+                
+                const fill = document.createElement('div');
+                fill.className = 'probability-fill';
+                fill.style.width = `${conf}%`;
+                
+                // Set color based on confidence and if it's the primary defect
+                if (className === data.class) {
+                    fill.style.background = 'linear-gradient(to right, #FF9A3D, #FF6B6B)';
+                } else if (conf > 20) {
+                    fill.style.background = 'linear-gradient(to right, #FFD93D, #FF9A3D)';
+                } else {
+                    fill.style.background = 'linear-gradient(to right, #6BC5F8, #4CD97B)';
+                }
+                
+                bar.appendChild(fill);
+                item.appendChild(header);
+                item.appendChild(bar);
+                probabilityBars.appendChild(item);
+            });
+        }
+        
+        function showResult(message, type) {
+            alert(message);
+        }
+    </script>
+</body>
+</html>
